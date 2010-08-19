@@ -59,7 +59,8 @@
 	stream_support,				% stream support option
 	loop,						% the fun handling requests
 	ws_loop,					% the loop handling websockets
-	ws_autoexit					% true | false
+	ws_autoexit,				% true | false
+    ws_nospawn                  % true | false
 }).
 
 % Request
@@ -84,6 +85,7 @@
 	socket,						% the socket handling the request
 	socket_mode,				% http | ssl
 	ws_autoexit,				% websocket process is automatically killed: true | false
+    ws_nospawn,                 % websocket process is not spawned by misultin
 	peer_addr,					% peer IP | undefined
 	peer_port,					% peer port | undefined
 	peer_cert,					% undefined | the DER encoded peer certificate that can be decoded with public_key:pkix_decode_cert/2

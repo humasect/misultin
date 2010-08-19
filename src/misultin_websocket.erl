@@ -53,7 +53,7 @@ check(_Path, Headers) ->
 	check_websockets(VsnSupported, Headers).
 
 % Connect and handshake with Websocket.
-connect(Req, #ws{vsn = Vsn, socket = Socket, socket_mode = SocketMode, path = Path, headers = Headers, ws_autoexit = WsAutoExit} = Ws, WsLoop) ->
+connect(Req, #ws{vsn = Vsn, socket = Socket, socket_mode = SocketMode, path = Path, headers = Headers, ws_autoexit = WsAutoExit, ws_nospawn = WsNoSpawn} = Ws, WsLoop) ->
 	?LOG_DEBUG("building handshake response", []),
 	% get data
 	Origin = misultin_utility:header_get_value('Origin', Headers),
@@ -64,7 +64,10 @@ connect(Req, #ws{vsn = Vsn, socket = Socket, socket_mode = SocketMode, path = Pa
 	misultin_socket:send(Socket, HandshakeServer, SocketMode),
 	% add data to ws record and spawn controlling process
 	Ws0 = misultin_ws:new(Ws#ws{origin = Origin, host = Host}, self()),
-	WsHandleLoopPid = spawn(fun() -> WsLoop(Ws0) end),
+	WsHandleLoopPid = case WsNoSpawn of
+                          true -> WsLoop(Ws0);
+                          _ -> spawn(fun() -> WsLoop(Ws0) end)
+                      end,
 	erlang:monitor(process, WsHandleLoopPid),
 	% set opts
 	misultin_socket:setopts(Socket, [{packet, 0}, {active, true}], SocketMode),

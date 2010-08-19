@@ -53,7 +53,8 @@
 	stream_support,
 	loop,
 	ws_loop,
-	ws_autoexit
+	ws_autoexit,
+    ws_nospawn
 }).
 
 % includes
@@ -65,7 +66,7 @@
 % Callback from misultin_socket
 handle_data(Sock, SocketMode, ListenPort, PeerAddr, PeerPort, PeerCert, RecvTimeout, CustomOpts) ->
 	% build connection & request records
-	C = #c{sock = Sock, socket_mode = SocketMode, port = ListenPort, recv_timeout = RecvTimeout, compress = CustomOpts#custom_opts.compress, stream_support = CustomOpts#custom_opts.stream_support, loop = CustomOpts#custom_opts.loop, ws_loop = CustomOpts#custom_opts.ws_loop, ws_autoexit = CustomOpts#custom_opts.ws_autoexit},
+	C = #c{sock = Sock, socket_mode = SocketMode, port = ListenPort, recv_timeout = RecvTimeout, compress = CustomOpts#custom_opts.compress, stream_support = CustomOpts#custom_opts.stream_support, loop = CustomOpts#custom_opts.loop, ws_loop = CustomOpts#custom_opts.ws_loop, ws_autoexit = CustomOpts#custom_opts.ws_autoexit, ws_nospawn = CustomOpts#custom_opts.ws_nospawn},
 	Req = #req{socket = Sock, socket_mode = SocketMode, peer_addr = PeerAddr, peer_port = PeerPort, peer_cert = PeerCert},
 	% enter loop
 	request(C, Req).
@@ -146,7 +147,7 @@ headers(#c{sock = Sock, socket_mode = SocketMode, recv_timeout = RecvTimeout, ws
 					body(C, Req#req{headers = Headers});
 				{true, Vsn} ->
 					?LOG_DEBUG("websocket request received", []),
-					misultin_websocket:connect(Req, #ws{vsn = Vsn, socket = Sock, socket_mode = SocketMode, peer_addr = Req#req.peer_addr, peer_port = Req#req.peer_port, path = Path, headers = Headers, ws_autoexit = C#c.ws_autoexit}, WsLoop)
+					misultin_websocket:connect(Req, #ws{vsn = Vsn, socket = Sock, socket_mode = SocketMode, peer_addr = Req#req.peer_addr, peer_port = Req#req.peer_port, path = Path, headers = Headers, ws_autoexit = C#c.ws_autoexit, ws_nospawn = C#c.ws_nospawn}, WsLoop)
 			end;
 		{SocketMode, Sock, _Other} ->
 			?LOG_DEBUG("tcp error treating headers: ~p, send bad request error back", [_Other]),
